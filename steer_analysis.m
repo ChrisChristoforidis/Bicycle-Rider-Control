@@ -58,7 +58,7 @@ results=getMeanResponseSteer(r);
 
 results.data(1).w=r(1).results.fb.data(2).w(1500:4500);
 results.data(1).t=r(1).results.fb.data(2).t(1500:4500).';
-data=cmpIRoutput(r,results);
+data=cmpIRoutput(results);
 
 
 %%

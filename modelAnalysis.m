@@ -130,7 +130,7 @@ ylim([-max(dat.w)-1 max(dat.w)+1]);
 
 %% Create Generic Impulse
 [fb_results,nofb_results] = getMeanResponse(r);
- data=cmpIRoutput(r,fb_results,nofb_results);
+ data=cmpIRoutput(fb_results,nofb_results);
 %%
 
 fb_results = results.fb;

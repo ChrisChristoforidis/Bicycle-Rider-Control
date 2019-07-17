@@ -1,9 +1,9 @@
- function dat=cmpIRoutput(r,fb_results,varargin)
+ function dat=cmpIRoutput(fb_results,varargin)
 %Compares the ouput of the response  produced by the FIR for the 2 experimental conditions.
 if(~isempty(varargin))
   nofb_results=varargin{1};
   flag=true;
-  leg='FB ON MEAN';
+  leg='FB On';
   
 else 
   flag=false;
@@ -21,10 +21,6 @@ end
 figure('units','normalized','outerposition',[0 0 1 1])
 n=length(fb_results.black_box);
 for i=1:n
-np=r(17).results.fb.black_box(i); 
-y_3=convSim(w,np);  
-
-  
 np=fb_results.black_box(i); 
 y_1=convSim(w,np);
 dat(i).y=y_1;
@@ -40,23 +36,17 @@ np.h = nofb_results.black_box(i).std+ nofb_results.black_box(i).h;
 y_2std_plus=convSim(w,np)*180/pi;
 np.h = -nofb_results.black_box(i).std+ nofb_results.black_box(i).h;
 y_2std_minus=convSim(w,np)*180/pi;
-np=r(17).results.nofb.black_box(i); 
-y_4=convSim(w,np);  
 end
 
 subplot(2,n,i)
 plot(t,y_1(:,2)*180/pi,'b','DisplayName',leg,'linewidth',1.5);
 hold on
-plot(t,y_3(:,2)*180/pi,'k--','DisplayName','FB ON IRIS','linewidth',1.5);
 fill([t ;flipud(t)],[y_1std_plus(:,2);flipud(y_1std_minus(:,2))],'b', 'FaceAlpha', 0.2,'linestyle','none','HandleVisibility','off') 
 if ( flag==true)
-plot(t,y_2(:,2)*180/pi,'r','DisplayName',"FB OFF MEAN",'linewidth',1.5)
+plot(t,y_2(:,2)*180/pi,'r','DisplayName',"FB off",'linewidth',1.5)
 fill([t ;flipud(t)],[y_2std_plus(:,2);flipud(y_2std_minus(:,2))],'r', 'FaceAlpha', 0.2,'linestyle','none','HandleVisibility','off') 
-plot(t,y_4(:,2)*180/pi,'g--','DisplayName','FB OFF IRIS','linewidth',1.5);
-
 end
 plot(t,zeros(length(t),1),'k','HandleVisibility','off')
-
 ylim([-max(abs(y_1(:,2)))*1.4*180/pi  max(abs(y_1(:,2)))*1.4*180/pi])
 title(num2str(round((fb_results.data(i).v+fb_results.data(i).v)/2*3.6,2))+" km/h")
 if(i==1)
@@ -77,15 +67,11 @@ ylim([-max(abs(w))*1.2 max(abs(w))*1.2]);
 subplot(2,n,i+n)
 plot(t,y_1(:,1)*180/pi,'DisplayName',leg,'linewidth',1.5);
 hold on
-plot(t,y_3(:,1)*180/pi,'k--','DisplayName','FB OFF IRIS','linewidth',1.5);
-
 grid on
 fill([t ;flipud(t)],[y_1std_plus(:,1);flipud(y_1std_minus(:,1))],'b', 'FaceAlpha', 0.2,'linestyle','none','HandleVisibility','off') 
 if ( flag==true)
-plot(t,y_2(:,1)*180/pi,'r','DisplayName',"FB OFF MEAN",'linewidth',1.5)
+plot(t,y_2(:,1)*180/pi,'r','DisplayName',"FB off",'linewidth',1.5)
 fill([t ;flipud(t)],[y_2std_plus(:,1);flipud(y_2std_minus(:,1))],'r', 'FaceAlpha', 0.2,'linestyle','none','HandleVisibility','off') 
-plot(t,y_4(:,1)*180/pi,'g--','DisplayName','FB OFF IRIS','linewidth',1.5);
-
 end
 plot(t,zeros(length(t),1),'k','HandleVisibility','off')
 ylim([-max(abs(y_1(:,1)))*1.4*180/pi  max(abs(y_1(:,1)))*1.4*180/pi])
