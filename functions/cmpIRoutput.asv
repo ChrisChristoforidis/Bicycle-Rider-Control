@@ -7,21 +7,21 @@ if(~isempty(varargin))
   
 else 
   flag=false;
-  leg='Response';
+  leg=' Mean Response';
 end
 
 if(flag==true)
   [t,w]=generateImpulse(400,0.2);
 else
-  %[t,w]=generateImpulse(15,0.2);
-  w=fb_results.data(1).w;
-  t=fb_results.data(1).t;
+  [t,w]=generateImpulse(15,0.2);
+%   w=fb_results.data(1).w;
+%   t=fb_results.data(1).t;
 end
 
 figure('units','normalized','outerposition',[0 0 1 1])
 n=length(fb_results.black_box);
 for i=1:n
-np=r(17).results.fb.black_box(i); 
+np=r(14).results.fb.black_box(i); 
 y_3=convSim(w,np);  
 
   
@@ -47,7 +47,7 @@ end
 subplot(2,n,i)
 plot(t,y_1(:,2)*180/pi,'b','DisplayName',leg,'linewidth',1.5);
 hold on
-plot(t,y_3(:,2)*180/pi,'k--','DisplayName','FB ON IRIS','linewidth',1.5);
+plot(t,y_3(:,2)*180/pi,'k--','DisplayName',' IRIS','linewidth',1.5);
 fill([t ;flipud(t)],[y_1std_plus(:,2);flipud(y_1std_minus(:,2))],'b', 'FaceAlpha', 0.2,'linestyle','none','HandleVisibility','off') 
 if ( flag==true)
 plot(t,y_2(:,2)*180/pi,'r','DisplayName',"FB OFF MEAN",'linewidth',1.5)
@@ -77,7 +77,7 @@ ylim([-max(abs(w))*1.2 max(abs(w))*1.2]);
 subplot(2,n,i+n)
 plot(t,y_1(:,1)*180/pi,'DisplayName',leg,'linewidth',1.5);
 hold on
-plot(t,y_3(:,1)*180/pi,'k--','DisplayName','FB OFF IRIS','linewidth',1.5);
+plot(t,y_3(:,1)*180/pi,'k--','DisplayName','IRIS','linewidth',1.5);
 
 grid on
 fill([t ;flipud(t)],[y_1std_plus(:,1);flipud(y_1std_minus(:,1))],'b', 'FaceAlpha', 0.2,'linestyle','none','HandleVisibility','off') 
@@ -85,7 +85,6 @@ if ( flag==true)
 plot(t,y_2(:,1)*180/pi,'r','DisplayName',"FB OFF MEAN",'linewidth',1.5)
 fill([t ;flipud(t)],[y_2std_plus(:,1);flipud(y_2std_minus(:,1))],'r', 'FaceAlpha', 0.2,'linestyle','none','HandleVisibility','off') 
 plot(t,y_4(:,1)*180/pi,'g--','DisplayName','FB OFF IRIS','linewidth',1.5);
-
 end
 plot(t,zeros(length(t),1),'k','HandleVisibility','off')
 ylim([-max(abs(y_1(:,1)))*1.4*180/pi  max(abs(y_1(:,1)))*1.4*180/pi])

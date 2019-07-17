@@ -24,8 +24,8 @@ end
 omegac= 2 * pi * 2.17;
 Gp=plantModel(bike_m,omegac);
 I=eye(6);
-Q=diag([1/max(dat.Rates(:,1))^2 , 1/max(dat.Rates(:,2))^2 ,1/max(dat.y(:,1))^2 ,1/max(dat.y(:,2))^2 0 0]);
-R=1/max(dat.Tdelta)^2;
+% Q=diag([1/max(dat.Rates(:,1))^2 , 1/max(dat.Rates(:,2))^2 ,1/max(dat.y(:,1))^2 ,1/max(dat.y(:,2))^2 0 0]);
+% R=1/max(dat.Tdelta)^2;
 Gp=ss(Gp.A,Gp.B(:,2:3),I(1:4,:),zeros(4,2));
 %[K,~,~]=lqr(Gp.A,Gp.B(:,1),Q,R);
 Gpd=c2d(Gp,0.001);

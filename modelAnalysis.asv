@@ -109,15 +109,15 @@ clearvars -except results
 %%
 
 i=4;
-dat=fb_results.black_box(i); 
+dat=nofb_results.black_box(i); 
 %np=fb_results.black_box(i); 
 
 figure('units','normalized','outerposition',[0 0 1 1])
 plot(dat.t,dat.y(:,2)*180/pi);
 hold on
 plot(dat.t,dat.y(:,1)*180/pi)
-plot(dat.t,dat.roll*180/pi,'r--')
-dat=fb_results.data(i); 
+%plot(dat.t,dat.roll*180/pi,'r--')
+dat=nofb_results.data(i); 
 plot(dat.t,zeros(length(dat.w),1))
 ylim([-0.3*180/pi 0.3*180/pi])
 yyaxis right
@@ -130,7 +130,7 @@ ylim([-max(dat.w)-1 max(dat.w)+1]);
 
 %% Create Generic Impulse
 [fb_results,nofb_results] = getMeanResponse(r);
- data=cmpIRoutput(r,fb_results,nofb_results);
+ data=cmpIRoutput(fb_results,nofb_results);
 %%
 
 fb_results = results.fb;

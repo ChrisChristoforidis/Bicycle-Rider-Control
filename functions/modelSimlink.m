@@ -21,7 +21,7 @@ bike_m.B(:,3)=bike_m.B(:,2);
 end
 
 endtime=dat.t(end);
-timedelay=0.025;
+% timedelay=0.00;
 try 
   out= sim('state_fb_model_v2',[],options);
   out.steer_torque=out.SteerTorque;

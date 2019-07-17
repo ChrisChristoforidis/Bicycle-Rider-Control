@@ -3,11 +3,11 @@
 %CHRISTOS CHRISTOFORIDIS
 %12/6/2018
 clear;
-addpath('functions', genpath("Measurements/28_6_2019_leo"));
+addpath('functions', genpath("Measurements/iris"));
 close all;
 
 %% 
-files = dir('Measurements/28_6_2019_leo/steer_torque/');
+files = dir('Measurements/iris/steer');
 filenames = [];
 for ixx=3:length(files)
   filenames{ixx-2}=files(ixx,1).name;

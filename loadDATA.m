@@ -3,11 +3,11 @@
 %CHRISTOS CHRISTOFORIDIS
 %12/6/2018
 clear;
-addpath('functions', genpath("Measurements/8_7_2019_michael"));
+ addpath('functions', genpath("Measurements\iris"));
 close all;
 
 %% 
-files = dir('Measurements\8_7_2019_michael\lateral_pull\');
+files = dir('Measurements\iris\roll\');
 filenames = [];
 for ixx=3:length(files)
   filenames{ixx-2}=files(ixx,1).name;
