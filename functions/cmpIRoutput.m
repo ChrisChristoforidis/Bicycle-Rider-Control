@@ -1,4 +1,4 @@
- function dat=cmpIRoutput(fb_results,varargin)
+ function dat=cmpIRoutput(r,fb_results,varargin)
 %Compares the ouput of the response  produced by the FIR for the 2 experimental conditions.
 if(~isempty(varargin))
   nofb_results=varargin{1};
@@ -11,7 +11,9 @@ else
 end
 
 if(flag==true)
-  [t,w]=generateImpulse(400,0.2);
+ % [t,w]=generateImpulse(400,0.2);
+  w=r(1).results.fb.data(1).w;
+  t=r(1).results.fb.data(1).t.';
 else
   %[t,w]=generateImpulse(15,0.2);
   w=fb_results.data(1).w;

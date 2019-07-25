@@ -1,4 +1,4 @@
-function out = modelSim(K,bike,dat)
+function out = modelSimInverse(K,bike,dat)
 % Simulates the response of the measured input with the full closed loop model.
 % Inputs 
 %     K   :   The gains of the controller
@@ -10,10 +10,19 @@ function out = modelSim(K,bike,dat)
 
 
 % Get combined plant model (bicycle+neuromuscular dyanmics)
+% whipple.M0(2,2)=K(5);
+% whipple.K0(2,2)=K(6);
+% whipple.M0(1,2)=K(7);
+% whipple.M0(2,1)=whipple.M0(1,2);
+% whipple.K0(2,2)=K(8);
+% whipple.K0(2,1)=whipple.K0(1,2);
 
+% bike = delftbike(dat.v,whipple); 
+% K=K(1:4);
 % Process
 omegac= 2 * pi * 2.17;
 Gp=plantModel(bike,omegac);
+
 %Gpd=ss(Gp.A,Gp.B,Gp.C,Gp.D,'OutputDelay',0.022);
 
 if max(abs(dat.w)) < 20
@@ -22,8 +31,8 @@ end
 % Q=eye(6);
 % R=0.01;
 % [K,~,~]=lqr(Gp.A,Gp.B(:,1),Q,R);
-K=[K 0 0];
-Gp2=ss(Gp.A,Gp.B(:,2:3),eye(7),zeros(7,2));
+K=[K(1:4) 0 0];
+Gp2=ss(Gp.A,Gp.B(:,2:3),eye(6),zeros(6,2));
 Gp2.u={'a','w'};
 Gp2.y='y';
 Cd=ss([],[],[],-K,'InputDelay',0.000);
@@ -51,12 +60,7 @@ output=lsim(Gclx,dat.w,dat.t);
 
 
 % Output assignment
-if ( size(bike.A,1)==5)
-  out.heading=output(:,5);
-  out.steer_torque = output(:,6);
-else
 out.steer_torque = output(:,5);
-end
 out.steer_angle = output(:,4);
 out.roll_angle = output(:,3);
 out.roll_rate = output(:,1);

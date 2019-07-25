@@ -1,4 +1,4 @@
-function dat = Roll_Observer(raw)
+function phi = Roll_Observer(raw)
 v = raw.v; %m/s
 %Reduction of samples to the true sampling frequency of IMU
 a = 1;
