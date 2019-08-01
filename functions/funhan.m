@@ -2,7 +2,6 @@
 
 
 function dz = funhan(t,z,v,Gp,K,w)
-w=w(floor((t+0.001)*1000)+1);
 
 x=z(1:7);
 

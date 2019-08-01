@@ -28,13 +28,13 @@ hold on;
 plot(out.tout,out.steer_angle*180/pi);
 ylabel("Steer Angle (Nm)");
 legend("Non Parametric Model","Parametric Model")
-subplot(414)
-plot(dat.t,dat.Tdelta);
-hold on;
-plot(out.tout,out.steer_torque);
-xlabel("Time (s)");
-ylabel("Torque (Nm)");
-legend("Measurement","Parametric Model")
+% subplot(414)
+% plot(dat.t,dat.Tdelta);
+% hold on;
+% plot(out.tout,out.steer_torque);
+% xlabel("Time (s)");
+% ylabel("Torque (Nm)");
+% legend("Measurement","Parametric Model")
 
 fig.hf=gcf;
 

@@ -1,12 +1,17 @@
-function sys = delftbikeHeading(v,whipple)
+function sys = delftbikeHeading(v)
 
 % Coefficient matrices;
 
-M0 = whipple.M0;
-C1 = whipple.C1;
-K0 = whipple.K0;
-Hfw = whipple.Hfw;
-K2 = whipple.K2;
+load('JBike6MCK.mat', 'C1', 'M0', 'K2', 'K0')
+
+a = -fliplr(eye(2)) + eye(2);
+M0 = a .* M0;
+C1 = C1 .* a;
+K0 = K0 .* a;
+K2 = K2 .* a;
+Hfw = [0.84; 0.014408]; % dfx/dTq
+
+
 trail=0.0665;
 wheelbase=1.03;
 tilt=(17)*pi/180;

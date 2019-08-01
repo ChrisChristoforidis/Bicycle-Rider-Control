@@ -84,7 +84,7 @@ for i=4:4
  np.N=length(data(i).w);
  dat.N=length(data(i).w);
 
- bike = delftbike(dat.v,whipple); 
+ 
  [K, fval, ~, ~] =ga(@(X)statefbError2(X,np,bike,dat),6,[], [], [], [], lb, ub, [],options);
  output =modelSim(K,bike,dat);
  output.K=K;
