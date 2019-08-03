@@ -11,13 +11,13 @@ else
 end
 
 if(flag==true)
- % [t,w]=generateImpulse(400,0.2);
-  w=r(1).results.fb.data(1).w;
-  t=r(1).results.fb.data(1).t.';
+  [t,w]=generateImpulse(400,0.2);
+%   w=r(1).results.fb.data(1).w;
+%   t=r(1).results.fb.data(1).t.';
 else
-  %[t,w]=generateImpulse(15,0.2);
-  w=fb_results.data(1).w;
-  t=fb_results.data(1).t;
+  [t,w]=generateImpulse(15,0.2);
+   %w=fb_results.data(1).w;
+   %t=fb_results.data(1).t;
 end
 
 figure('units','normalized','outerposition',[0 0 1 1])

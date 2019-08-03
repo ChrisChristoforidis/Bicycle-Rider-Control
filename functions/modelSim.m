@@ -22,7 +22,7 @@ end
 % Q=eye(6);
 % R=0.01;
 % [K,~,~]=lqr(Gp.A,Gp.B(:,1),Q,R);
-K=[K 0 0];
+K=[K 0];
 Gp2=ss(Gp.A,Gp.B(:,2:3),eye(7),zeros(7,2));
 Gp2.u={'a','w'};
 Gp2.y='y';

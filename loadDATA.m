@@ -204,4 +204,104 @@ clearvars -except    nofb_runs   fb_runs
 
 %save('C:\dev\bicycle-rider-control-identification\Measurements\all_data_thomas.mat');
 
+fb_results.data=fb_runs;
 
+nofb_results.data=nofb_runs;
+%%
+
+for i=1:length(fb_results.data)
+dat=fb_results.data(i); 
+np = nonparaID(dat);
+fb_results.black_box(i)=np;
+end
+
+for i=1:length(nofb_results.data)
+dat=nofb_results.data(i); 
+np = nonparaID(dat);
+nofb_results.black_box(i)=np;
+end
+%%
+results.fb=fb_results;
+results.nofb=nofb_results;
+results.Name='Name';
+
+clearvars -except results
+
+%%
+
+i=4;
+dat=nofb_results.black_box(i); 
+%np=fb_results.black_box(i); 
+
+figure('units','normalized','outerposition',[0 0 1 1])
+plot(dat.t,dat.y(:,2)*180/pi);
+hold on
+plot(dat.t,dat.y(:,1)*180/pi)
+plot(dat.t,dat.roll*180/pi,'r--')
+dat=fb_results.data(i); 
+plot(dat.t,zeros(length(dat.w),1))
+ylim([-0.3*180/pi 0.3*180/pi])
+yyaxis right
+
+
+plot(dat.t,dat.w)
+ylim([-max(dat.w)-1 max(dat.w)+1]);
+
+
+%%
+fb_results = results.fb;
+nofb_results =results.nofb;
+
+for i=1:length(fb_results.data)
+ delta= fb_results.data(i).y(:,2);
+ Fs=fb_results.data(i).Fs;
+ dt = 1 / Fs;
+ U=fft(delta);
+ Suu=1/length(delta)*U.*conj(U);
+ f = (0:length(delta) / 2).' / length(delta) / dt;
+ fb_results.data(i).Suu=real(Suu(1:length(delta)/2+1));
+ fb_results.data(i).f =f;
+ [fb_results.data(i).PSD, ~] = periodogram(delta, hann(length(delta)), length(delta),Fs);
+end
+
+
+for i=1:length(nofb_results.data)
+ delta= nofb_results.data(i).y(:,2);
+ Fs=nofb_results.data(i).Fs;
+ dt = 1 / Fs;
+ U=fft(delta);
+ Suu=1/length(delta)*U.*conj(U);
+ f = (0:length(delta) / 2).' / length(delta) / dt;
+ nofb_results.data(i).Suu=real(Suu(1:length(delta)/2+1));
+ nofb_results.data(i).f =f;
+ [nofb_results.data(i).PSD, ~] = periodogram(delta, hann(length(delta)),length(delta),Fs);
+end
+
+results.fb=fb_results;
+results.nofb=nofb_results;
+results.Name='Name';
+
+clearvars -except results
+
+
+
+%%
+for i=19:length(r)
+  
+fb_results=r(i).results.fb;
+nofb_results=r(i).results.nofb;
+Name=r(i).results.Name;
+
+
+
+
+plotPSD(fb_results.data,nofb_results.data,Name)
+
+% 
+% plotSpeedIRF(fb_results.black_box,fb_results.data,Name)
+% plotSpeedIRF(nofb_results.black_box,nofb_results.data,Name)
+
+plotFBstatusIRF(fb_results.black_box,nofb_results.black_box,fb_results.data,nofb_results.data,Name)
+
+
+end
