@@ -13,9 +13,9 @@ tau = (0:M - 1)' * dt;
 
 w = [zeros(M-1, 1); ww];
 
-y = zeros(length(ww), 2);
+y = zeros(length(ww), size(np.h,2));
 
-for ii = 1:2
+for ii = 1:size(np.h,2)
   ht = np.h(1:M, ii); % IRF
   % h(tau) * u(t-tau)
   for loop = 0:length(ww) - 1

@@ -3,11 +3,11 @@
 %CHRISTOS CHRISTOFORIDIS
 %12/6/2018
 clear;
- addpath('functions', genpath("Measurements\17_07_2019_leon"));
+ addpath('functions', genpath("Measurements\3_7_2019_koen"));
 close all;
 
 %% 
-files = dir('Measurements\17_07_2019_leon\roll\');
+files = dir('Measurements\3_7_2019_koen\lateral_pull\');
 filenames = [];
 for ixx=3:length(files)
   filenames{ixx-2}=files(ixx,1).name;
@@ -78,7 +78,9 @@ raw.time = raw.time - min(raw.time);
 raw.SteerAngle = data(i1:i2, 5);
 pureForce=data(i1:i2,20);
 
-
+R_C = [  0.9938   -0.0058   -0.1112;
+         0         0.9986   -0.0525;
+         0.1114    0.0522    0.9924];
 raw.Tmotor = data(i1:i2, 8); %Nm
   fc = 10; %hz (cutoff frequency)
   Wn = pi * fc / (2 * raw.Fs);
@@ -210,7 +212,8 @@ nofb_results.data=nofb_runs;
 %%
 
 for i=1:length(fb_results.data)
-dat=fb_results.data(i); 
+dat=fb_results.data(i);
+dat.y=[dat.Rates(:,1),dat.y(:,2)];
 np = nonparaID(dat);
 fb_results.black_box(i)=np;
 end
@@ -229,15 +232,14 @@ clearvars -except results
 
 %%
 
-i=4;
-dat=nofb_results.black_box(i); 
-%np=fb_results.black_box(i); 
+i=1;
+dat=fb_results.data(i); 
+np=fb_results.black_box(i); 
 
 figure('units','normalized','outerposition',[0 0 1 1])
-plot(dat.t,dat.y(:,2)*180/pi);
+plot(dat.t,dat.Rates(:,1)*180/pi);
 hold on
-plot(dat.t,dat.y(:,1)*180/pi)
-plot(dat.t,dat.roll*180/pi,'r--')
+plot(dat.t,np.y(:,1)*180/pi)
 dat=fb_results.data(i); 
 plot(dat.t,zeros(length(dat.w),1))
 ylim([-0.3*180/pi 0.3*180/pi])

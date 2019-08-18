@@ -1,0 +1,23 @@
+load('matlab.mat');
+%%
+i=1;
+for k=1:4
+  i=1;
+  j=1;
+  while(i<=length(v.fb(k).values))  
+    if(v.fb(k).values(i,1)<65)
+      v.fb(k).values(i,:)=[];
+      v.compare(k).values(j,:)=[];
+      i=i-1;
+    end
+    i=i+1;
+  end
+   while(j<=length(v.nofb(k).values))  
+    if(v.nofb(k).values(j,1)<65)
+      v.nofb(k).values(j,:)=[];
+      v.compare(k).values(j,:)=[];
+      j=j-1;
+    end
+    j=j+1;
+  end
+end

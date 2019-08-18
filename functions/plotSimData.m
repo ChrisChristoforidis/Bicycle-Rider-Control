@@ -18,23 +18,23 @@ ylabel("Lateral Force (N)");
 legend("Measurement")
 subplot(412)
 plot(np.t,np.y(:,1)*180/pi);
-ylabel("Roll Angle (Nm)");
+ylabel("Roll Angle (deg)");
 hold on;
-plot(out.tout,out.roll_angle*180/pi);
+plot(out.tout,out.roll_rate*180/pi);
 legend("Non Parametric Model","Parametric Model")
 subplot(413)
-plot(np.t,np.y(:,2)*180/pi);
+plot(np.t,np.y(:,3)*180/pi);
 hold on;
 plot(out.tout,out.steer_angle*180/pi);
-ylabel("Steer Angle (Nm)");
+ylabel("Steer Angle (deg)");
 legend("Non Parametric Model","Parametric Model")
-% subplot(414)
-% plot(dat.t,dat.Tdelta);
-% hold on;
-% plot(out.tout,out.steer_torque);
-% xlabel("Time (s)");
-% ylabel("Torque (Nm)");
-% legend("Measurement","Parametric Model")
+subplot(414)
+plot(dat.t,np.y(:,2)*180/pi);
+hold on;
+plot(out.tout,out.roll_angle*180/pi);
+xlabel("Time (s)");
+ylabel("Roll Angle (deg)");
+legend("Measurement","Parametric Model")
 
 fig.hf=gcf;
 
