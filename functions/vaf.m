@@ -16,4 +16,4 @@ function v = vaf(y, y_est)
 %         Variance Acounted For (VAF)
 %
 
-v = 100 * (1 - cov(y-y_est) ./ cov(y));
+v = 100 * (1 - diag(cov(y-y_est)) ./ diag(cov(y)));

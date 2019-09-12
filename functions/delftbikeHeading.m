@@ -3,6 +3,7 @@ function sys = delftbikeHeading(v)
 % Coefficient matrices;
 
 whipple=getbicycleEOM();
+whipple.M0(1,1)=whipple.M0(1,1)*1.1;
 steerbyWireParam
 O = zeros(2);
 I = eye(2); % Some easy notations

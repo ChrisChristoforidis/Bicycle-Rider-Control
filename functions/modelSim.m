@@ -1,4 +1,4 @@
-function out = modelSim(K,bike,dat)
+function out = modelSim(X,rider,dat)
 % Simulates the response of the measured input with the full closed loop model.
 % Inputs 
 %     K   :   The gains of the controller
@@ -12,32 +12,29 @@ function out = modelSim(K,bike,dat)
 % Get combined plant model (bicycle+neuromuscular dyanmics)
 
 % Process
-omegac= 2 * pi * 2.17;
-Gp=plantModel(bike,omegac);
-%Gpd=ss(Gp.A,Gp.B,Gp.C,Gp.D,'OutputDelay',0.022);
+Gpd=rider.Gpd;
+Del=rider.Del;
 
-if max(abs(dat.w)) < 20
-  Gp.B(:,3)=[bike.B(:,2) ;0 ;0];
-end
-% Q=eye(6);
-% R=0.01;
-% [K,~,~]=lqr(Gp.A,Gp.B(:,1),Q,R);
-K=[K 0];
-Gp2=ss(Gp.A,Gp.B(:,2:3),eye(7),zeros(7,2));
-Gp2.u={'a','w'};
-Gp2.y='y';
-Cd=ss([],[],[],-K,'InputDelay',0.000);
+K=[X(1:6) 0];
+Cd=ss([],[],[],-K,1/dat.Fs);
 Cd.u='y';
-Cd.y='a';
-C=ss([],[],[],K);
-C.u='y';
-C.y='a';
-input={'w'};
+Cd.y='a1';
+C=ss([],[],[],[0 -X(7) 0 -X(8) 0 0 0],1/dat.Fs);
 
-%Gcl_delayed=connect(Gp2,Cd,input,'y');
-Gcl=connect(Gp2,Cd,input,'y');
-Gclx = pade(Gcl,3);
-output=lsim(Gclx,dat.w,dat.t);
+C.u='y_un';
+C.y='a2';
+input={'w'};
+Sum=sumblk('a=a1+a2');
+
+% C_total=connect(Cd,C,Sum,'a','y');
+% Gcl_delayed=connect(Gp2,Cd,input,'y');
+Gcl=connect(Gpd,Del,Cd,C,Sum,input,'y_un');
+% Gcl=connect(Gpd,Cd,input,'y');
+
+%Gclx = pade(Gcl,3);
+
+output=lsim(Gcl,dat.w,dat.t);
+
 %Simulation of closed loop system
 %output = lsim(Gp.A-Gp.B(:,2)*[K 0 0],Gp.B(:,3),eye(6),zeros(6,1),dat.w*1.,dat.t);
 % Gpd=c2d(Gp,0.001);
@@ -51,7 +48,7 @@ output=lsim(Gclx,dat.w,dat.t);
 
 
 % Output assignment
-if ( size(bike.A,1)==5)
+if ( size(Gpd.A,1)==7)
   out.heading=output(:,5);
   out.steer_torque = output(:,6);
 else

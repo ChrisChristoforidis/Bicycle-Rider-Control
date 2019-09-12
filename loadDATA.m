@@ -2,13 +2,21 @@
 
 %CHRISTOS CHRISTOFORIDIS
 %12/6/2018
-clear;
- addpath('functions', genpath("Measurements\3_7_2019_koen"));
-close all;
+% clear;
+% close all;
 
 %% 
-files = dir('Measurements\3_7_2019_koen\lateral_pull\');
-filenames = [];
+files = dir('subjects');
+
+for i=3:length(files)
+  subject_folders{i-2}=files(i,1).name;
+end
+
+for k=4
+  
+  addpath("subjects/"+subject_folders{k}+"/lateral_pull");
+  files=dir("subjects/"+subject_folders{k}+"/lateral_pull");
+  filenames=[];
 for ixx=3:length(files)
   filenames{ixx-2}=files(ixx,1).name;
 end
@@ -16,26 +24,10 @@ header = readcell(filenames{1}, 'Range', 'A1:T1').';
 
 
 
-% %%
-% for ix=1:length(filenames)
-%   data = readmatrix(filenames{ix});
-%   data(data>10000)=0;
-%     dt = 1 / 1000;
-%     
-%   raw.count = data(:, 2);
-%   raw.vel = data(:, 10);
-%   raw.N = length(raw.count);
-%   raw.time = (0:raw.N - 1) * dt;
-%   raw.w = data(:, 20);
-%   raw.w(isnan(raw.w))=0;
-%   figure()
-%   plot(raw.w)
-%   figure()
-%   legend(filenames{ix})
-%  pause()
-% end
+results(k).Name=subject_folders{k};
 %%
-
+results(k).fb.data=[];
+results(k).nofb.data=[];
 for ix=1:length(filenames)
   data = readmatrix(filenames{ix});
   data(data>10000)=0;
@@ -47,263 +39,355 @@ for ix=1:length(filenames)
   raw.time = (0:raw.N - 1) * dt;
   raw.w = data(:, 20);
   raw.w(isnan(raw.w))=0;
-  
 
 
-   ub=60;
-   raw = filterLatForce(raw,40,ub);
 
-%
-figure(1)
-pause(0.00001);
-frame_h = get(handle(gcf), 'JavaFrame');
-set(frame_h, 'Maximized', 1);
-plot(raw.time, raw.vel);
-grid on
-yyaxis right
-plot(raw.time,raw.w*0.003,'r');hold on
-plot(raw.time, data(:,6));
-legend(filenames{ix})
-xlabel('Time (s)');
-ylabel('Bike Velocity (m/s)');
-title('Choose the time points between which the analysis is going to be performed ');
-[x, ~] = ginput(2);
-close(1)
-i1 = round(x(1)/dt);
-i2 = round(x(2)/dt);
+  ub=60;
+  raw = filterLatForce(raw,40,ub);
 
-raw.w=raw.w(i1:i2);
-raw.time = raw.time(i1:i2);
-raw.time = raw.time - min(raw.time);
-raw.SteerAngle = data(i1:i2, 5);
-pureForce=data(i1:i2,20);
+  %
+  figure(1)
+  pause(0.00001);
+  frame_h = get(handle(gcf), 'JavaFrame');
+  set(frame_h, 'Maximized', 1);
+  plot(raw.time, raw.vel/10);
+  hold on
+  plot(raw.time, data(:,6));
+  grid on
+  yyaxis right
+  plot(raw.time,raw.w,'r');hold on
+  ylim([0 350])
+  legend(filenames{ix})
+  xlabel('Time (s)');
+  ylabel('Bike Velocity (m/s)');
+  title('Choose the time points between which the analysis is going to be performed ');
+  [x, ~] = ginput(2);
+  close(1)
+  i1 = round(x(1)/dt);
+  i2 = round(x(2)/dt);
+  bounds=[i1, i2];
+  raw.w=raw.w(i1:i2);
+  raw.N=length(raw.w);
+  raw.time = raw.time(i1:i2);
+  raw.time = raw.time - min(raw.time);
+  steer_angle = data(i1:i2, 5);
 
-R_C = [  0.9938   -0.0058   -0.1112;
-         0         0.9986   -0.0525;
-         0.1114    0.0522    0.9924];
-raw.Tmotor = data(i1:i2, 8); %Nm
+  R_e =[0.993852724155588,-0.006106115160415,-0.110541747978598;
+  0.006068692321752,0.999981357505053,-6.749932267486786e-04;
+  0.110543808790994,0,0.993871252395390];
+  Tmotor = data(i1:i2, 8); %Nm
   fc = 10; %hz (cutoff frequency)
   Wn = pi * fc / (2 * raw.Fs);
   [c, d] = butter(4, Wn);
-%Filtering of Motor Input and SteerAngle
-raw.Tmotor = filtfilt(c, d, raw.Tmotor);
-raw.SteerAngle = filtfilt(c, d, raw.SteerAngle);
-raw.SteerAngle = raw.SteerAngle - median(raw.SteerAngle);
-%IMU Gyro data
-raw.GyroX = data(i1:i2, 16);
-raw.GyroY = data(i1:i2, 17);
-raw.GyroZ = data(i1:i2, 18);
-%Mean  forward speed
-v = data(i1:i2, 10);
-raw.v = mean(v);
-raw.velocity=v;
-%
-t=(0:raw.N - 1) * dt;
-figure(1)
-pause(0.00001);
-frame_h = get(handle(gcf), 'JavaFrame');
-set(frame_h, 'Maximized', 1);
-plot(t,data(:, 10));
-grid on
-yyaxis right
-plot(t,data(:,20)*0.005,'y:');hold on
-plot(t, data(:, 16));
-legend(filenames{ix})
-xlabel('Time (s)');
-ylabel('Bike Velocity (m/s)');
-title('Choose the time point you think roll angle is zero ');
-[x, ~] = ginput(1);
-close(1)
-y1 = round(x(1)/dt);
-observer_struct.GyroX=data(y1:end, 16);
-observer_struct.GyroY=data(y1:end, 17);
-observer_struct.GyroZ=data(y1:end, 18);
-observer_struct.v=raw.vel(y1:end);
-observer_struct.time=t(y1:end);
+  %Filtering of Motor Input and SteerAngle
+  Tmotor = filtfilt(c, d, Tmotor);
+  steer_angle = filtfilt(c, d, steer_angle);
+  steer_angle = steer_angle - median(steer_angle);
+  %IMU Gyro data
+  gyro=data(i1:i2,16:18)-median(data(i1:i2,16:18));
+  gyro_corrected=(R_e*gyro')';
+  gyro_filtered=filtfilt(c, d, gyro_corrected);
+  %Lin Accel
+  linaccel=-data(i1:i2,13:15);
+  linaccel_corrected=(R_e*linaccel')';
+  linaccel_filtered=filtfilt(c, d, linaccel_corrected);
 
-raw.RollAngle = Roll_Observer(observer_struct);
-raw.RollAngle=raw.RollAngle(i1-y1:i2-y1);
-dat=raw;
+  %Mean  forward speed
+  v = data(i1:i2, 10);
+  raw.v = mean(v);
+  raw.velocity=v;
 
-roll=zeros(dat.N-y1+1,1);
-roll(1)=0;
-for i=1:dat.N-y1
-  roll(i+1)=roll(i)+observer_struct.GyroX(i)/dat.Fs;
+
+  %Eueler Integration of Roll and Yaw
+
+
+  roll=zeros(raw.N,1);
+  yaw_rate=zeros(raw.N,1);
+  yaw=zeros(raw.N,1);
+  roll(1)=0;
+  yaw(1)=0;
+    for i=1:raw.N-1
+      roll(i+1)=roll(i)+gyro_filtered(i,1)/raw.Fs;
+      yaw_rate(i)=gyro_filtered(i,2).*sin(roll(i))+gyro_filtered(i,3).*cos(roll(i));
+      yaw(i+1)=yaw(i)+yaw_rate(i)/raw.Fs;
+    end
+
+  roll=highpass(roll,0.05,1000);
+  roll=roll-median(roll);
+
+  yaw=highpass(yaw,0.05,1000);
+  yaw=yaw-median(yaw);
+  % FB status
+    if abs(median(Tmotor))<=1e-4
+      dat.FB=false;
+    else
+      dat.FB=true;
+    end
+  % Steer PSD
   
+ f = (0:length(steer_angle) / 2).' / length(steer_angle) / dt;
+ [PSD, ~] = periodogram(steer_angle, hann(length(steer_angle)), length(steer_angle),raw.Fs);
+
+
+  y = steer_angle.';
+  [Trider, v, dv, ddv, ~] = TorqueEstimation(y,  Tmotor.',dat.FB);
+
+
+  dat.Omega = gyro_filtered;
+  RollAccel = (gyro_filtered(2:end,1) - gyro_filtered(1:end-1,1))*raw.Fs;
+  RollAccel(end+1)=RollAccel(end);
+
+  dat.accel = [RollAccel,ddv.'];
+  dat.Tdelta = Trider(1:end).';
+  dat.LinAccel=linaccel_filtered;
+  dat.y = [roll,steer_angle,yaw];
+  dat.t = raw.time(1:end);
+  dat.N = length(dat.Tdelta);
+  dat.Fs = raw.Fs;
+  dat.w = raw.w;
+  dat.N=raw.N;
+  dat.f=f;
+  dat.PSD=PSD;
+  dat.Rates = [gyro_filtered(:,1),yaw_rate, dv.'];
+  dat.v = raw.v;
+  dat.ID=filenames{ix}(1:end-4);
+  dat.bounds=bounds;
+  if ( dat.FB ==true)
+    results(k).fb.data=[ results(k).fb.data  dat];
+  else
+    results(k).nofb.data=[ results(k).nofb.data  dat];
+  end
 end
-roll=roll(i1-y1:i2-y1);
 
-
-% FB status
-if abs(median(dat.Tmotor))<=1e-4
-  mod.FB=false;
-else
-  mod.FB=true;
-end
-%
-
-
-y = dat.SteerAngle.';
-[Trider, v, dv, ddv, ~] = TorqueEstimation(y, dat.Tmotor.',mod.FB);
-
-
-dat.Omega = filtfilt(c,d,dat.GyroX);
-RollAccel = (dat.GyroX(2:end) - dat.GyroX(1:end-1))*dat.Fs;
-RollAccel(end+1)=RollAccel(end);
-
-mod.accel = [RollAccel,ddv.'];
-mod.Tdelta = Trider(1:end).';
-mod.y = [dat.RollAngle(1:end), dat.SteerAngle(1:end)];
-mod.t = dat.time(1:end);
-mod.N = length(mod.Tdelta);
-mod.Fs = dat.Fs;
-mod.w = dat.w(1:end);
-mod.Rates = [dat.Omega, dv(1:end).'];
-mod.v = dat.v;
-mod.rawForce=pureForce;
-v = v.';
-dat=mod;
-dat.roll=highpass(roll,0.05,dat.Fs);
-clearvars -except raw dat ix filenames alldata
-alldata(ix)=dat;
-end
-%%
-
- T = struct2table(alldata); % convert the struct array to a table
- sortedT = sortrows(T, 'FB'); % sort the table by 'DOB'
- alldata = table2struct(sortedT) ;
-
- j=1;
- k=1;
-
- for i=1:length(alldata)
-   if alldata(i).FB==false
-     nofb_runs(j)=alldata(i);
-     j=j+1;
-   else
-     fb_runs(k)=alldata(i);
-     k=k+1;
-   end
- end
-
- T = struct2table(nofb_runs); % convert the struct array to a table
+ T = struct2table(results(k).fb.data); % convert the struct array to a table
  sortedT = sortrows(T, 'v'); % sort the table by 'DOB'
- nofb_runs = table2struct(sortedT) ;
- 
- T = struct2table(fb_runs); % convert the struct array to a table
+ results(k).fb.data = table2struct(sortedT) ;
+ T = struct2table(results(k).nofb.data); % convert the struct array to a table
  sortedT = sortrows(T, 'v'); % sort the table by 'DOB'
- fb_runs = table2struct(sortedT) ;
- 
-clearvars -except    nofb_runs   fb_runs
-
-% for i=1:length(nofb_runs)
-%   nofb_runs(i).w=nofb_runs(i).w*1.2;
-% end
-% for i=1:length(fb_runs)
-%   fb_runs(i).w=fb_runs(i).w*1.2;
-% end
-
-
-%save('C:\dev\bicycle-rider-control-identification\Measurements\all_data_thomas.mat');
-
-fb_results.data=fb_runs;
-
-nofb_results.data=nofb_runs;
-%%
-
-for i=1:length(fb_results.data)
-dat=fb_results.data(i);
-dat.y=[dat.Rates(:,1),dat.y(:,2)];
-np = nonparaID(dat);
-fb_results.black_box(i)=np;
+ results(k).nofb.data = table2struct(sortedT) ;
+ rmpath("subjects/"+subject_folders{k}+"/lateral_pull");
 end
 
-for i=1:length(nofb_results.data)
-dat=nofb_results.data(i); 
-np = nonparaID(dat);
-nofb_results.black_box(i)=np;
-end
-%%
-results.fb=fb_results;
-results.nofb=nofb_results;
-results.Name='Name';
-
-clearvars -except results
-
-%%
-
-i=1;
-dat=fb_results.data(i); 
-np=fb_results.black_box(i); 
-
-figure('units','normalized','outerposition',[0 0 1 1])
-plot(dat.t,dat.Rates(:,1)*180/pi);
-hold on
-plot(dat.t,np.y(:,1)*180/pi)
-dat=fb_results.data(i); 
-plot(dat.t,zeros(length(dat.w),1))
-ylim([-0.3*180/pi 0.3*180/pi])
-yyaxis right
-
-
-plot(dat.t,dat.w)
-ylim([-max(dat.w)-1 max(dat.w)+1]);
-
-
-%%
-fb_results = results.fb;
-nofb_results =results.nofb;
-
-for i=1:length(fb_results.data)
- delta= fb_results.data(i).y(:,2);
- Fs=fb_results.data(i).Fs;
- dt = 1 / Fs;
- U=fft(delta);
- Suu=1/length(delta)*U.*conj(U);
- f = (0:length(delta) / 2).' / length(delta) / dt;
- fb_results.data(i).Suu=real(Suu(1:length(delta)/2+1));
- fb_results.data(i).f =f;
- [fb_results.data(i).PSD, ~] = periodogram(delta, hann(length(delta)), length(delta),Fs);
-end
-
-
-for i=1:length(nofb_results.data)
- delta= nofb_results.data(i).y(:,2);
- Fs=nofb_results.data(i).Fs;
- dt = 1 / Fs;
- U=fft(delta);
- Suu=1/length(delta)*U.*conj(U);
- f = (0:length(delta) / 2).' / length(delta) / dt;
- nofb_results.data(i).Suu=real(Suu(1:length(delta)/2+1));
- nofb_results.data(i).f =f;
- [nofb_results.data(i).PSD, ~] = periodogram(delta, hann(length(delta)),length(delta),Fs);
-end
-
-results.fb=fb_results;
-results.nofb=nofb_results;
-results.Name='Name';
-
-clearvars -except results
-
-
-
-%%
-for i=19:length(r)
-  
-fb_results=r(i).results.fb;
-nofb_results=r(i).results.nofb;
-Name=r(i).results.Name;
-
-
-
-
-plotPSD(fb_results.data,nofb_results.data,Name)
-
+%% FIR black box filtering
 % 
-% plotSpeedIRF(fb_results.black_box,fb_results.data,Name)
-% plotSpeedIRF(nofb_results.black_box,nofb_results.data,Name)
+for k=4
+  for i=1:length(results(k).fb.data)
+    dat=results(k).fb.data(i);
+    dat.y=[dat.Rates(:,1),dat.y(:,1),dat.y(:,2),dat.y(:,3)];
+    results(k).fb.black_box(i) = nonparaID(dat);  
+  end
+  for i=1:length(results(k).nofb.data)
+    dat=results(k).nofb.data(i); 
+    dat.y=[dat.Rates(:,1),dat.y(:,1),dat.y(:,2),dat.y(:,3)];
+    results(k).nofb.black_box(i)= nonparaID(dat);  
+  end
 
-plotFBstatusIRF(fb_results.black_box,nofb_results.black_box,fb_results.data,nofb_results.data,Name)
+end
+% 
+
+%% Keep 4 runs per condition per participant.
+% runs are removed  depending on how good the average FIT was for all out put signals.
 
 
+for k=1:length(results)
+  while(length(results(k).fb.data)>4)
+    vel=zeros(length(results(k).fb.data),1);
+    for j=1:length(results(k).fb.data)
+      vel(j) =results(k).fb.data(j).v;
+    end
+    [~,idx]=min(diff(vel));
+    v1=mean(vaf([results(k).fb.data(idx).Rates(:,1) results(k).fb.data(idx).y],results(k).fb.black_box(idx).y));
+    v2=mean(vaf([results(k).fb.data(idx+1).Rates(:,1) results(k).fb.data(idx+1).y],results(k).fb.black_box(idx+1).y));
+    if (v1<v2)
+      results(k).fb.data(idx)=[];
+      results(k).fb.black_box(idx)=[];
+    else
+      results(k).fb.data(idx+1)=[];
+      results(k).fb.black_box(idx+1)=[];
+    end
+  end
+  
+   while(length(results(k).nofb.data)>4)
+    vel=zeros(length(results(k).nofb.data),1);
+    for j=1:length(results(k).nofb.data)
+      vel(j) =results(k).nofb.data(j).v;
+    end
+    [~,idx]=min(diff(vel));
+    v1=mean(vaf([results(k).nofb.data(idx).Rates(:,1) results(k).nofb.data(idx).y],results(k).nofb.black_box(idx).y));
+    v2=mean(vaf([results(k).nofb.data(idx+1).Rates(:,1) results(k).nofb.data(idx+1).y],results(k).nofb.black_box(idx+1).y));
+    if (v1<v2)
+      results(k).nofb.data(idx)=[];
+      results(k).nofb.black_box(idx)=[];
+    else
+      results(k).nofb.data(idx+1)=[];
+      results(k).nofb.black_box(idx+1)=[];
+    end
+  end
+end
+
+%%
+model_fit_fb=zeros(4,20,4);
+model_fit_nofb=zeros(4,20,4);
+
+for k=1:length(results)
+  for i=1:4
+    v1=vaf([results(k).nofb.data(i).Rates(:,1) results(k).nofb.data(i).y],results(k).nofb.black_box(i).y);
+    v2=vaf([results(k).fb.data(i).Rates(:,1) results(k).fb.data(i).y],results(k).fb.black_box(i).y);
+  
+    model_fit_fb(:,k,i)=v1;
+    model_fit_nofb(:,k,i)=v2;
+    
+  end
+
+end
+
+
+ C = permute(model_fit_fb,[1 3 2]);
+ C = reshape(C,[],size(A,2),1);
+ 
+best_fit=[ mean(C); std(C)];
+%%
+roll_rate_h_fb=zeros(length(results(1).fb.black_box(1).h(:,1)),20,4);
+roll_rate_h_nofb=zeros(length(results(1).fb.black_box(1).h(:,1)),20,4);
+roll_angle_h_fb=zeros(length(results(1).fb.black_box(1).h(:,1)),20,4);
+roll_angle_h_nofb=zeros(length(results(1).fb.black_box(1).h(:,1)),20,4);
+steer_angle_h_fb=zeros(length(results(1).fb.black_box(1).h(:,1)),20,4);
+steer_angle_h_nofb=zeros(length(results(1).fb.black_box(1).h(:,1)),20,4);
+yaw_angle_h_fb=zeros(length(results(1).fb.black_box(1).h(:,1)),20,4);
+yaw_angle_h_nofb=zeros(length(results(1).fb.black_box(1).h(:,1)),20,4);
+speed_fb=zeros(20,4);
+speed_nofb=zeros(20,4);
+
+for k=1:length(results)
+  for i=1:4
+    roll_rate_h_fb(:,k,i)=results(k).fb.black_box(i).h(:,1);
+    roll_rate_h_nofb(:,k,i)=results(k).nofb.black_box(i).h(:,1);
+    roll_angle_h_fb(:,k,i)=results(k).fb.black_box(i).h(:,2);
+    roll_angle_h_nofb(:,k,i)=results(k).nofb.black_box(i).h(:,2);
+    steer_angle_h_fb(:,k,i)=results(k).fb.black_box(i).h(:,3);
+    steer_angle_h_nofb(:,k,i)=results(k).nofb.black_box(i).h(:,3);
+    yaw_angle_h_fb(:,k,i)=results(k).fb.black_box(i).h(:,4);
+    yaw_angle_h_nofb(:,k,i)=results(k).nofb.black_box(i).h(:,4);    
+    speed_fb(k,i)=results(k).fb.data(i).v;
+    speed_nofb(k,i)=results(k).nofb.data(i).v;   
+  end
+    
+%     figure(2)
+%     subplot(141)
+%   %  plot(results(k).fb.black_box(1).h(:,2),'k')
+%     hold on
+%    plot(results(k).nofb.black_box(1).h(:,2),'r')
+%     subplot(142)
+%  %   plot(results(k).fb.black_box(2).h(:,2),'k')
+%     hold on
+%     plot(results(k).nofb.black_box(2).h(:,2),'r')
+%     subplot(143)
+%  %   plot(results(k).fb.black_box(3).h(:,2),'k')
+%     hold on
+%     plot(results(k).nofb.black_box(3).h(:,2),'r')
+%     subplot(144)
+%  %   plot(results(k).fb.black_box(4).h(:,2),'k')
+%     hold on
+%     plot(results(k).nofb.black_box(4).h(:,2),'r')
+  
+end
+
+
+%%
+
+a=results(18).fb.data(4).w ;
+b=length(a);
+c=0:0.001:0.001*(length(a)-1);
+% [t,w]=generateImpulse(200,0.2);
+% w=repmat(w,8);
+% a=w(:,1);
+% b=length(w);
+% c=0:0.001:0.001*(length(a)-1);
+for i=1:4
+
+mean_rider.fb.data(i).w = a;
+mean_rider.fb.data(i).N = b;
+mean_rider.fb.data(i).t =c;
+mean_rider.fb.data(i).v =mean(speed_fb(:,i));
+
+mean_rider.fb.black_box(i).N = b;
+mean_rider.fb.black_box(i).t =c;
+
+mean_rider.fb.black_box(i).h=[ mean(roll_rate_h_fb(:,:,i),2) mean(roll_angle_h_fb(:,:,i),2) ...
+                            mean(steer_angle_h_fb(:,:,i),2) mean(yaw_angle_h_fb(:,:,i),2)];
+mean_rider.fb.black_box(i).y = convSim(mean_rider.fb.data(i).w,mean_rider.fb.black_box(i));
+
+
+mean_rider.nofb.data(i).w = a;
+mean_rider.nofb.data(i).N = b;
+mean_rider.nofb.data(i).t = c;
+mean_rider.nofb.black_box(i).v =mean(speed_nofb(:,i));
+
+mean_rider.nofb.black_box(i).N = b;
+mean_rider.nofb.black_box(i).t =c;
+
+mean_rider.nofb.black_box(i).h=[ mean(roll_rate_h_nofb(:,:,i),2) mean(roll_angle_h_nofb(:,:,i),2) ...
+                                 mean(steer_angle_h_nofb(:,:,i),2) mean(yaw_angle_h_nofb(:,:,i),2)];
+                          
+mean_rider.nofb.black_box(i).y = convSim(mean_rider.nofb.data(i).w,mean_rider.nofb.black_box(i));
+
+end
+
+
+
+%%
+K3=[-1.118882463442295e+02,4.800122589623359,-1.998293003408785e+02,17.837166922557667,-80.373610252034010,2.709336546726954];
+%for sub=18:18
+% mean_rider=results(sub);
+options = optimoptions('ga', "PopulationSize", 80, ...
+  'CrossoverFraction', 0.85,'FitnessLimit',0.02, ...
+  'InitialPopulationRange', [-50; 50], ...
+  'InitialPopulationMatrix',K3);
+lb=-ones(6,1)*250;
+ub=ones(6,1)*250;
+delay=10;
+
+i=4;
+while(i<5)
+ dat=mean_rider.fb.data(i);
+ np=mean_rider.fb.black_box(i);
+ %resample for faster computation.
+ np.y=resample(np.y,1,5);
+ np.t=0:0.005:(length(np.y)-1)*0.005;
+ dat.t=np.t;
+ dat.w=resample(dat.w,1,5);
+ dat.Fs=200;
+ bike=delftbikeHeading(dat.v); 
+ rider=getRiderModel(bike,2 * pi * 2.17,delay,dat);
+ [X0, ~, ~, ~] = ga(@(X)statefbError2(X,np,rider, dat,3,2),6, [], [], [],[], lb,ub, [],options);
+%[K1 , fval1, ~, ~] = fmincon(@(X)statefbError2(X,np,rider, dat,3,1),X0,[], [], [],[], lb,ub, [],[]);
+ [K2 , fval2, ~, ~] = fmincon(@(X)statefbError2(X,np,rider, dat,3,2),X0,[], [], [],[], lb,ub, [],[]); 
+  if( fval2>1e-3)
+    continue
+  else
+   output =modelSim3(K2,rider,dat);
+   output.K=K2;
+   r(21).final_model(i)= output; 
+   i=i+1;
+  end
+end
+
+%end
+
+%%
+for i=1:1
+  
+  
+ dat=mean_rider.fb.data(i);
+ np=mean_rider.fb.black_box(i);
+ np.y=resample(np.y,1,5);
+ np.t=0:0.005:(length(np.y)-1)*0.005;
+ dat.t=np.t;
+ dat.w=resample(dat.w,1,5);
+ dat.Fs=200;
+ bike=delftbikeHeading(dat.v); 
+
+ rider=getRiderModel(bike,2 * pi * 2.17,delay,dat);
+ plotSimData(modelSim3(r(21).final_model(i).K(1,:),rider,dat),np,dat)
+ 
 end

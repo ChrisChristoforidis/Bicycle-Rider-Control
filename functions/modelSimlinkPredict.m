@@ -26,21 +26,25 @@ end
 omegac= 2 * pi * 2.17;
 Gp=plantModel(bike_m,omegac);
 I=eye(7);
-% Q=diag([1/max(dat.Rates(:,1))^2 , 1/max(dat.Rates(:,2))^2 ,1/max(dat.y(:,1))^2 ,1/max(dat.y(:,2))^2 0 0]);
-% R=1/max(dat.Tdelta)^2;
+%  Q=diag([1/max(dat.Rates(:,1))^2 , 1/max(dat.Rates(:,2))^2 ,1/max(dat.y(:,1))^2 ,1/max(dat.y(:,2))^2 0 0 0]);
+%  R=1/max(dat.Tdelta)^2;
 % Q=diag(K(1:6));
 % R=K(7);
-Gp=ss(Gp.A,Gp.B(:,2:3),I(1:6,:),zeros(6,2));
+Gp=ss(Gp.A,Gp.B(:,2:3),I(1:7,:),zeros(7,2));
 % [K,~,~]=lqr(Gp.A,Gp.B(:,1),Q,R);
 Gpd=c2d(Gp,0.001);
 endtime=dat.t(end);
-K=[K(1:5) 0 0 ];
+K=[K(1:6)  0 ];
 % out=lsim(Gp.A-Gp.B(:,1)*K,Gp.B(:,2),Gp.C,Gp.D(:,1),dat.w,dat.t)
 try 
-  output= sim('tapped_delay_line_kalman',[],options);
+  tic
+  output= sim('tapped_delay_line',[],options);
+  toc
   out.roll_angle=output.State(:,3);
   out.steer_angle=output.State(:,4);
-  
+  out.heading=output.State(:,5);
+  out.steer_torque=output.State(:,6);
+  out.roll_rate = output.State(:,1);
   %out.steer_torque=out.SteerTorque;
 
 catch 

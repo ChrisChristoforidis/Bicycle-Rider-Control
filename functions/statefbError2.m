@@ -1,10 +1,13 @@
-function en = statefbError2(X,np,bike_m, dat)
+function en = statefbError2(X,np,rider, dat,n,k)
 
-K=X;
-out = modelSim(K,bike_m,dat);
-y_mod= [out.roll_rate out.steer_angle];
+if (k==1)
+  out = modelSimOLD(X,rider,dat);
+else 
+  out = modelSim3(X,rider,dat);
+end
+y_mod= [out.roll_rate out.roll_angle  out.steer_angle out.heading];
 
 e = (y_mod- np.y);
-en = ((sum(e.^2)) * 1 / np.N);
-en= en(1);
+en = ((sum(e.^2)) * 1 / length(np.y));
+en= en(n);
 end

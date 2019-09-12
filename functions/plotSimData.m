@@ -12,28 +12,35 @@ function fig =plotSimData(out,np,dat)
 out.tout=dat.t;
 figure();
 clf;
-subplot(411)
+subplot(511)
 plot(dat.t,dat.w);
 ylabel("Lateral Force (N)");
 legend("Measurement")
-subplot(412)
+subplot(512)
 plot(np.t,np.y(:,1)*180/pi);
-ylabel("Roll Angle (deg)");
+ylabel("Roll Rate (deg/s)");
 hold on;
 plot(out.tout,out.roll_rate*180/pi);
 legend("Non Parametric Model","Parametric Model")
-subplot(413)
+subplot(513)
 plot(np.t,np.y(:,3)*180/pi);
 hold on;
 plot(out.tout,out.steer_angle*180/pi);
 ylabel("Steer Angle (deg)");
 legend("Non Parametric Model","Parametric Model")
-subplot(414)
+subplot(514)
 plot(dat.t,np.y(:,2)*180/pi);
 hold on;
 plot(out.tout,out.roll_angle*180/pi);
 xlabel("Time (s)");
 ylabel("Roll Angle (deg)");
+legend("Measurement","Parametric Model")
+subplot(515)
+plot(dat.t,np.y(:,4)*180/pi);
+hold on;
+plot(out.tout,out.heading*180/pi);
+xlabel("Time (s)");
+ylabel("Yaw Angle (deg)");
 legend("Measurement","Parametric Model")
 
 fig.hf=gcf;
