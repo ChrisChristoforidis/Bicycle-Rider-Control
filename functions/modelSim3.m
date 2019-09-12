@@ -13,9 +13,10 @@ Gpd=rider.Gpd2;
 Predictor=rider.Predictor;
 Del=rider.Del;
 K=[X(1:5) X(6) 0 0];
-% Q=eye(7);
+%Q=diag(X(1:7));
 % 0
-% K=lqr(rider.bike.A,rider.bike.B(:,2),eye(5),0.5);
+%  K=lqr(rider.Gp.A,rider.Gp.B(:,2),Q,X(8));
+%  K=[K 0];
 %   
 %K=[K 0 0];
 Cd=ss([],[],[],-K);
@@ -37,7 +38,7 @@ Sum1=sumblk('ye=y-ym_d',7);
 % F.u='ye'
 % F.y='ye'
 Sum2=sumblk(convertStringsToChars("y_f="+Predictor.OutputName{1}(1:end-3)+"+ye"),7);
-Cd.u={'y_f(1)','y_f(2)','y_f(3)','y_f(4)','y_f(5)','y_f(6)','y(7)','y(8)'};
+Cd.u={'y_f(1)','y_f(2)','y_f(3)','y_f(4)',convertStringsToChars(convertCharsToStrings(Predictor.OutputName{1}(1:end-3))+"(5)"),'y(6)','y(7)','y(8)'};
 % F = 1/(20*tf('s')+1);
 % F.InputName = {'yf(1)','yf(2)','yf(3)','yf(4)','yf(5)','yf(6)','yf(7)'};
 % F.OutputName = {'yee(1)','yee(2)','yee(3)','yee(4)','yee(5)','yee(6)','yee(7)'};

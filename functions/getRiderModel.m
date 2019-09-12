@@ -17,7 +17,7 @@ Gp3.y='y_un';
 
 
 Del=ss([],[],[],eye(8),1/dat.Fs,'OutputDelay',delay);
-Del.OutputDelay(5)=delay*3;
+Del.OutputDelay(5)=delay*4;
 Del.OutputDelay(8)=0;
 Del.InputName='y_un';
 Del.OutputName='y';

@@ -17,7 +17,8 @@ Gp3.y='y_un';
 
 
 Del=ss([],[],[],eye(8),1/dat.Fs,'OutputDelay',delay);
-Del.OutputDelay(8)
+Del.OutputDelay(5)=delay*4;
+Del.OutputDelay(8)=0;
 Del.InputName='y_un';
 Del.OutputName='y';
 Gpd=c2d(Gp2,1/dat.Fs);
@@ -54,13 +55,16 @@ for n=1:delay-1
   
 end
 
-
+Del2=ss([],[],[],eye(7),1/dat.Fs,'OutputDelay',delay);
+Del2.u = Predictor.OutputName{1}(1:end-3);
+Del2.y = 'ym_d';
 
 
 rider.Gpd2=Gpd2;
 rider.Gpd=Gpd;
 rider.Predictor=Predictor;
 rider.Del=Del;
+rider.Del2=Del2;
 rider.Gp=Gp;
 rider.bike=bike;
 end

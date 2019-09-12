@@ -13,9 +13,10 @@ Gpd=rider.Gpd2;
 Predictor=rider.Predictor;
 Del=rider.Del;
 K=[X(1:5) X(6) 0 0];
-% Q=eye(7);
+%Q=diag(X(1:7));
 % 0
-% K=lqr(rider.bike.A,rider.bike.B(:,2),eye(5),0.5);
+%  K=lqr(rider.Gp.A,rider.Gp.B(:,2),Q,X(8));
+%  K=[K 0];
 %   
 %K=[K 0 0];
 Cd=ss([],[],[],-K);

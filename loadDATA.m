@@ -347,7 +347,7 @@ lb=-ones(6,1)*250;
 ub=ones(6,1)*250;
 delay=10;
 
-i=4;
+i=1;
 while(i<5)
  dat=mean_rider.fb.data(i);
  np=mean_rider.fb.black_box(i);
@@ -362,12 +362,12 @@ while(i<5)
  [X0, ~, ~, ~] = ga(@(X)statefbError2(X,np,rider, dat,3,2),6, [], [], [],[], lb,ub, [],options);
 %[K1 , fval1, ~, ~] = fmincon(@(X)statefbError2(X,np,rider, dat,3,1),X0,[], [], [],[], lb,ub, [],[]);
  [K2 , fval2, ~, ~] = fmincon(@(X)statefbError2(X,np,rider, dat,3,2),X0,[], [], [],[], lb,ub, [],[]); 
-  if( fval2>1e-3)
+  if( fval2>7e-4)
     continue
   else
    output =modelSim3(K2,rider,dat);
    output.K=K2;
-   r(21).final_model(i)= output; 
+   r(22).final_model(i)= output; 
    i=i+1;
   end
 end
@@ -375,7 +375,7 @@ end
 %end
 
 %%
-for i=1:1
+for i=1:4
   
   
  dat=mean_rider.fb.data(i);
@@ -388,6 +388,6 @@ for i=1:1
  bike=delftbikeHeading(dat.v); 
 
  rider=getRiderModel(bike,2 * pi * 2.17,delay,dat);
- plotSimData(modelSim3(r(21).final_model(i).K(1,:),rider,dat),np,dat)
+ plotSimData(r(21).final_model(i),np,dat)
  
 end
