@@ -12,7 +12,7 @@ for i=3:length(files)
   subject_folders{i-2}=files(i,1).name;
 end
 
-for k=4
+for k=5
   
   addpath("subjects/"+subject_folders{k}+"/lateral_pull");
   files=dir("subjects/"+subject_folders{k}+"/lateral_pull");
@@ -146,6 +146,7 @@ for ix=1:length(filenames)
   dat.Fs = raw.Fs;
   dat.w = raw.w;
   dat.N=raw.N;
+  dat.fork_motor=data(i1:i2,7);
   dat.f=f;
   dat.PSD=PSD;
   dat.Rates = [gyro_filtered(:,1),yaw_rate, dv.'];
@@ -157,6 +158,7 @@ for ix=1:length(filenames)
   else
     results(k).nofb.data=[ results(k).nofb.data  dat];
   end
+  
 end
 
  T = struct2table(results(k).fb.data); % convert the struct array to a table
@@ -167,6 +169,10 @@ end
  results(k).nofb.data = table2struct(sortedT) ;
  rmpath("subjects/"+subject_folders{k}+"/lateral_pull");
 end
+
+
+
+
 
 %% FIR black box filtering
 % 
@@ -184,6 +190,58 @@ for k=4
 
 end
 % 
+
+%%
+load('steer\all_data_steer_camilo.mat')
+resultss(1)=results;
+load('steer\all_data_steer_iris.mat');
+resultss(2)=results;
+load('steer\all_data_steer_jork.mat');
+resultss(3)=results;
+load('steer\all_data_steer_christodoulos.mat');
+resultss(4)=results;
+load('steer\all_data_steer_katerina.mat');
+resultss(5)=results;
+load('steer\all_data_steer_koen.mat');
+resultss(6)=results;
+load('steer\all_data_steer_lars.mat');
+resultss(7)=results;
+load('steer\all_data_steer_leo.mat');
+resultss(8)=results;
+load('steer\all_data_steer_marko.mat');
+resultss(9)=results;
+load('steer\all_data_steer_michael.mat');
+resultss(9)=results;
+load('steer\all_data_steer_nikos.mat');
+resultss(10)=results;
+load('steer\all_data_steer_pier.mat');
+resultss(11)=results;
+load('steer\all_data_steer_pranav.mat');
+resultss(12)=results;
+load('steer\all_data_steer_thomas.mat');
+resultss(13)=results;
+load('steer\all_data_steer_
+%%
+for k=1:length(results)
+  while(length(results(k).fb.data)>4)
+    vel=zeros(length(results(k).fb.data),1);
+    for j=1:length(results(k).fb.data)
+      vel(j) =results(k).fb.data(j).v;
+    end
+    [~,idx]=min(diff(vel));
+    v1=mean(vaf([ results(k).fb.data(idx).y],results(k).fb.black_box(idx).y));
+    v2=mean(vaf([ results(k).fb.data(idx+1).y],results(k).fb.black_box(idx+1).y));
+    if (v1<v2)
+      results(k).fb.data(idx)=[];
+      results(k).fb.black_box(idx)=[];
+    else
+      results(k).fb.data(idx+1)=[];
+      results(k).fb.black_box(idx+1)=[];
+    end
+  end
+
+end
+
 
 %% Keep 4 runs per condition per participant.
 % runs are removed  depending on how good the average FIT was for all out put signals.
@@ -321,7 +379,7 @@ mean_rider.fb.black_box(i).y = convSim(mean_rider.fb.data(i).w,mean_rider.fb.bla
 mean_rider.nofb.data(i).w = a;
 mean_rider.nofb.data(i).N = b;
 mean_rider.nofb.data(i).t = c;
-mean_rider.nofb.black_box(i).v =mean(speed_nofb(:,i));
+mean_rider.nofb.data(i).v =mean(speed_nofb(:,i));
 
 mean_rider.nofb.black_box(i).N = b;
 mean_rider.nofb.black_box(i).t =c;
@@ -336,17 +394,20 @@ end
 
 
 %%
-K3=[-1.118882463442295e+02,4.800122589623359,-1.998293003408785e+02,17.837166922557667,-80.373610252034010,2.709336546726954];
+% for sub=1:20
+K3=[-120.700051250482,4.89856371477059,-249.802220370850,26.3141690734109,-92.4215987014822,3.32477589106087];
+%K3=[1.325389027142608e-04,0.004874206072009,2.920027722718003e-04,1.000170517451996,-3.329751949399863e-06,9.613144448287691e-05]*100;
+% K3=[-2.471879640219054e+02,19.151950368870505,-4.988194664604191e+02,-25.030527464060246,-1.853824710309890e+02,12.043496275409352];
 %for sub=18:18
 % mean_rider=results(sub);
 options = optimoptions('ga', "PopulationSize", 80, ...
-  'CrossoverFraction', 0.85,'FitnessLimit',0.02, ...
-  'InitialPopulationRange', [-50; 50], ...
-  'InitialPopulationMatrix',K3);
+  'CrossoverFraction', 0.85,'FitnessLimit',0.2, ...
+  'InitialPopulationRange', [-110; 110]);% ...
+  %'InitialPopulationMatrix',K3);
 lb=-ones(6,1)*250;
 ub=ones(6,1)*250;
 delay=10;
-
+% mean_rider=results(sub);
 i=4;
 while(i<5)
  dat=mean_rider.fb.data(i);
@@ -359,25 +420,63 @@ while(i<5)
  dat.Fs=200;
  bike=delftbikeHeading(dat.v); 
  rider=getRiderModel(bike,2 * pi * 2.17,delay,dat);
+ [X0, ~, ~, ~] = ga(@(X)statefbError2(X,np,rider, dat,3,1),6, [], [], [],[], lb,ub, [],options);
+ [K2 , fval2, ~, ~] = fmincon(@(X)statefbError2(X,np,rider, dat,3,1),X0,[], [], [],[], lb,ub, [],[]); 
+%   if( fval2>7e-4)
+%     continue
+%   else
+   output =modelSim3(K2,rider,dat,"on");
+   output.K=K2;
+   r(24).final_model(i)= output; 
+   i=i+1;
+%   end
+end
+%%
+% for sub=1:20
+K3=[-120.700051250482,4.89856371477059,-249.802220370850,26.3141690734109,-92.4215987014822,3.32477589106087];
+%K3=[1.325389027142608e-04,0.004874206072009,2.920027722718003e-04,1.000170517451996,-3.329751949399863e-06,9.613144448287691e-05]*100;
+% K3=[-2.471879640219054e+02,19.151950368870505,-4.988194664604191e+02,-25.030527464060246,-1.853824710309890e+02,12.043496275409352];
+%for sub=18:18
+% mean_rider=results(sub);
+options = optimoptions('ga', "PopulationSize", 80, ...
+  'CrossoverFraction', 0.85,'FitnessLimit',0.02, ...
+  'InitialPopulationRange', [-110; 110]);% ...
+  %'InitialPopulationMatrix',K3);
+lb=[-250 -0 -250 -250 -250 -250];
+ub=[0 250 0 250 0 250 ];
+delay=10;
+% mean_rider=results(sub);
+i=4;
+while(i<5)
+ dat=mean_rider.fb.data(i);
+ np=mean_rider.fb.black_box(i);
+ %resample for faster computation.
+  np.y=[r(30).final_model(i).roll_rate r(30).final_model(i).roll_angle r(30).final_model(i).steer_angle r(30).final_model(i).heading] ;
+%  np.y=resample(np.y,1,5);
+ 
+np.t=0:0.005:(length(np.y)-1)*0.005;
+ dat.t=np.t;
+ dat.w=resample(dat.w,1,5);
+ dat.Fs=200;
+ bike=delftbikeHeading(dat.v); 
+ rider=getRiderModel(bike,2 * pi * 2.17,delay,dat);
  [X0, ~, ~, ~] = ga(@(X)statefbError2(X,np,rider, dat,3,2),6, [], [], [],[], lb,ub, [],options);
-%[K1 , fval1, ~, ~] = fmincon(@(X)statefbError2(X,np,rider, dat,3,1),X0,[], [], [],[], lb,ub, [],[]);
  [K2 , fval2, ~, ~] = fmincon(@(X)statefbError2(X,np,rider, dat,3,2),X0,[], [], [],[], lb,ub, [],[]); 
-  if( fval2>1e-3)
+  if( fval2>2e-04)
     continue
   else
-   output =modelSim3(K2,rider,dat);
+   output =modelSim3(K2,rider,dat,"off");
    output.K=K2;
-   r(21).final_model(i)= output; 
+   r(32).final_model(i)= output; 
    i=i+1;
-  end
+   end
 end
 
 %end
 
 %%
-for i=1:1
-  
-  
+for i=1
+%   mean_rider=results(3);
  dat=mean_rider.fb.data(i);
  np=mean_rider.fb.black_box(i);
  np.y=resample(np.y,1,5);
@@ -386,8 +485,67 @@ for i=1:1
  dat.w=resample(dat.w,1,5);
  dat.Fs=200;
  bike=delftbikeHeading(dat.v); 
-
  rider=getRiderModel(bike,2 * pi * 2.17,delay,dat);
- plotSimData(modelSim3(r(21).final_model(i).K(1,:),rider,dat),np,dat)
+ output =modelSim3(r(32).final_model(i).K,rider,dat,"off");
+
+ plotSimData(output,np,dat)
+ 
+end
+
+
+%%
+ for sub=3:14
+%for sub=18:18
+% mean_rider=results(sub);
+options = optimoptions('ga', "PopulationSize", 80, ...
+  'CrossoverFraction', 0.85,'FitnessLimit',0.2, ...
+  'InitialPopulationRange', [-110; 110]);%, ...
+  %'InitialPopulationMatrix',K3);
+lb=[-250 -250 -250 -250 -250 -250 0 0];
+lb(1:6)=lb(1:6)*inf;
+ub=[250 250 250 250 250 250 inf inf ]*inf;
+delay=10;
+mean_rider=results(sub);
+i=1;
+while(i<5)
+ dat=mean_rider.fb.data(i);
+ np=mean_rider.fb.black_box(i);
+ %resample for faster computation.
+ np.y=resample(np.y,1,5);
+ np.t=0:0.005:(length(np.y)-1)*0.005;
+ dat.t=np.t;
+ dat.y=resample(dat.y,1,5);
+ dat.w=resample(dat.w,1,5)*0.8;
+
+ dat.Fs=200;
+ bike=delftbikeHeadingSteer(dat.v); 
+ rider=getRiderModel(bike,2 * pi * 2.17,delay,dat);
+ [X0, ~, ~, ~] = ga(@(X)statefbError3(X,np,rider, dat,2,4),8, [], [], [],[], lb,ub, [],options);
+ [K2 , fval2, ~, ~] = fmincon(@(X)statefbError3(X,np,rider, dat,2,4),X0,[], [], [],[], lb,ub, [],[]); 
+  if( fval2>0.0025)
+    continue
+  else
+   output =modelSim4(K2,rider,dat,"on");
+   output.K=K2;
+   r(sub).final_model(i)= output; 
+   i=i+1;
+   end
+end
+ end
+%%
+for i=3
+%   mean_rider=results(3);
+ dat=mean_rider.fb.data(i);
+ np=mean_rider.fb.black_box(i);
+ np.y=resample(np.y,1,5);
+ np.t=0:0.005:(length(np.y)-1)*0.005;
+ dat.t=np.t;
+ dat.w=resample(dat.w,1,5);
+ dat.Fs=200;
+ bike=delftbikeHeadingSteer(dat.v); 
+ rider=getRiderModel(bike,2 * pi * 2.17,delay,dat);
+ output =modelSim4(r(2).final_model(i).K,rider,dat,"on");
+
+ plotSimDataSteer(output,np,dat)
  
 end
