@@ -3,8 +3,8 @@ function sys = delftbikeHeadingSteer(v)
 % Coefficient matrices;
 
 whipple=getbicycleEOM();
-whipple.M0(2,2)=whipple.M0(2,2)*2.3;
-whipple.K0(2,2)= 3.3;
+whipple.M0(2,2)=whipple.M0(2,2)+0.21;
+whipple.K0(2,2)= whipple.K0(2,2)+8.9;
 whipple.Hfw =[ 0; 1];
     
 steerbyWireParam

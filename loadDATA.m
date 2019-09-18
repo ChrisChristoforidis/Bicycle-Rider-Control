@@ -509,7 +509,7 @@ ub=[250 250 250 250 250 250 inf inf ]*inf;
 delay=10;
 mean_rider=results(sub);
 i=2;
-while(i<5)
+while(i<3)
  dat=mean_rider.fb.data(i);
  np=mean_rider.fb.black_box(i);
  %resample for faster computation.
@@ -522,20 +522,20 @@ while(i<5)
  dat.Fs=200;
  bike=delftbikeHeadingSteer(dat.v); 
  rider=getRiderModel(bike,2 * pi * 2.17,delay,dat);
- [X0, ~, ~, ~] = ga(@(X)statefbError3(X,np,rider, dat,2,1),5, [], [], [],[], lb,ub, [],options);
- [K2 , fval2, ~, ~] = fmincon(@(X)statefbError3(X,np,rider, dat,2,1),X0,[], [], [],[], lb,ub, [],[]); 
+ [X0, ~, ~, ~] = ga(@(X)statefbError3(X,np,rider, dat,1,4),8, [], [], [],[], lb,ub, [],options);
+ [K2 , fval2, ~, ~] = fmincon(@(X)statefbError3(X,np,rider, dat,1,4),X0,[], [], [],[], lb,ub, [],[]); 
 %   if( fval2>0.0025)
 %     continue
 %   else
-   output =modelSim3(K2,rider,dat,"on");
+   output =modelSim4(K2,rider,dat,"on");
    output.K=K2;
-   r(26).final_model(i)= output; 
+   r(27).final_model(i)= output; 
    i=i+1;
 %    end
 end
  end
 %%
-for i=3
+for i=2
   mean_rider=results(2);
  dat=mean_rider.fb.data(i);
  np=mean_rider.fb.black_box(i);
@@ -546,7 +546,7 @@ for i=3
  dat.Fs=200;
  bike=delftbikeHeadingSteer(dat.v); 
  rider=getRiderModel(bike,2 * pi * 2.17,delay,dat);
- output =modelSim4(r(2).final_model(i).K,rider,dat,"on");
+ output =modelSim4(r(27).final_model(i).K,rider,dat,"on");
 
  plotSimDataSteer(output,np,dat)
  

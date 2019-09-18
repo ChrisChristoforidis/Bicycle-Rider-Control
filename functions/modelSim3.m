@@ -15,7 +15,7 @@ elseif (fb_status=="off")
 end
 Predictor=rider.Predictor;
 Del=rider.Del;
-K=[X(1:4) 0 X(5) 0 0];
+K=[X(1:6) 0 0];
 %Q=diag(X(1:7));
 % 0
 %  Q=eye(7);
