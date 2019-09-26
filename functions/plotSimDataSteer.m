@@ -10,7 +10,7 @@ function fig =plotSimDataSteer(out,np,dat)
 %out.tout=dat.t;
 
 out.tout=dat.t;
-figure();
+figure('units','normalized','outerposition',[0 0 1 1])
 clf;
 subplot(411)
 plot(dat.t,dat.w);

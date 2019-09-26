@@ -15,5 +15,5 @@ y_mod= [out.roll_rate out.roll_angle  out.steer_angle out.heading];
 r = ((sum(out.steer_torque.^2)) * 1 / length(np.y));
 e = (y_mod- np.y);
 en = ((sum(e.^2)) * 1 / length(np.y));
-en= en(n)+0.0008*r;
+en= 5*en(3)+en(4)+0.0008*r;
 end

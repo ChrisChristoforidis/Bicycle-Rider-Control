@@ -4,6 +4,7 @@ function sys = delftbikeHeading(v)
 
 whipple=getbicycleEOM();
 % whipple.M0(1,2)=whipple.M0(1,2)/5;
+ whipple.M0(2,2)=whipple.M0(2,2);
 
     
 steerbyWireParam

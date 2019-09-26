@@ -1,4 +1,4 @@
-function mod = plantModel(bike,omegac)
+function [mod,Gnm] = plantModel(bike,omegac)
 
 
 Gnm.A=[0 1; -omegac^2 -2*sqrt(1/2)*omegac];

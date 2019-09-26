@@ -10,18 +10,18 @@ function fig =plotSimData(out,np,dat)
 %out.tout=dat.t;
 
 out.tout=dat.t;
-figure();
-clf;
+figure('units','normalized','outerposition',[0 0 1 1]);clf;
 subplot(511)
 plot(dat.t,dat.w);
 ylabel("Lateral Force (N)");
 legend("Measurement")
 subplot(512)
-plot(np.t,np.y(:,1)*180/pi);
-ylabel("Roll Rate (deg/s)");
+plot(np.t,resample(dat.Tdelta,1,5));
+ylabel("Torque (Nm)");
+ylim([-5 5])
 hold on;
-plot(out.tout,out.roll_rate*180/pi);
-legend("Non Parametric Model","Parametric Model")
+plot(out.tout,out.steer_torque);
+legend("Measurement","Parametric Model")
 subplot(513)
 plot(np.t,np.y(:,3)*180/pi);
 hold on;

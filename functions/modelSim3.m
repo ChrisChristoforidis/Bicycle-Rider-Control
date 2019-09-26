@@ -13,9 +13,12 @@ if (fb_status=="on")
 elseif (fb_status=="off")
   Gpd=rider.Gpd4;
 end
+if (length(X)==5)
+  X(6)=0;
+end
 Predictor=rider.Predictor;
 Del=rider.Del;
-K=[X(1:6) 0 0];
+K=[X(1:5) X(6) 0 0];
 %Q=diag(X(1:7));
 % 0
 %  Q=eye(7);
@@ -38,27 +41,25 @@ Del2=rider.Del2;
 Sum1=sumblk('ye=y-ym_d',7);
 
 Sum2=sumblk(convertStringsToChars("y_f="+Predictor.OutputName{1}(1:end-3)+"+ye"),7);
-array={'y_f(1)','y_f(2)','y_f(3)','y_f(4)',convertStringsToChars(convertCharsToStrings(Predictor.OutputName{1}(1:end-3))+"(5)"),'y_f(6)','y(7)','y(8)'};
+% array={'y_f(1)','y_f(2)','y_f(3)','y_f(4)',convertStringsToChars(convertCharsToStrings(Predictor.OutputName{1}(1:end-3))+"(5)"),'y_f(6)','y(7)','y(8)'};
+array={'y_f(1)','y_f(2)','y_f(3)','y_f(4)','y_f(5)','y_f(6)','y(7)','y(8)'};
+
 Cd.u=array;
 
 
-Gcl=connect(Gpd,Del,Sum2,Del2,Sum1,Predictor,Cd,input,{'y_un','y',Predictor.OutputName{1}(1:end-3),'ye','y_f'});
+Gcl=connect(Gpd,Del,Sum2,Del2,Sum1,Predictor,Cd,input,{'y_un','y',Predictor.OutputName{1}(1:end-3),'ye','y_f','a'});
 
 
 output=lsim(Gcl,dat.w,dat.t);
 
 
 % Output assignment
-if ( size(Gpd.A,1)==7)
-  out.heading=output(:,5);
-  out.steer_torque = output(:,6);
-else
-out.steer_torque = output(:,5);
-end
+out.heading=output(:,5);
+out.steer_torque = output(:,6);
 out.steer_angle = output(:,4);
 out.roll_angle = output(:,3);
 out.roll_rate = output(:,1);
 out.steer_rate = output(:,2);
-out.Input= -K*output(:,1:length(K)).';
+out.Input= output(:,end);
 
 end
